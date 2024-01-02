@@ -1,13 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Gift, SearchResponse } from '../models/gifs.interfaces';
+import { Gif, SearchResponse } from '../models/gifs.interfaces';
 
 
 
 @Injectable({providedIn: 'root'})
 export class GifsService {
 
-    public giftList: Gift[] = [];
+    public giftList: Gif[] = [];
 
     private _tagHistory:string[] = [];
     private apiKey = 'K903bjP2Gkx4LMd2YvVsvxmLrE94wgs7';
@@ -17,7 +17,9 @@ export class GifsService {
 
     constructor(
         private http: HttpClient
-    ) { }
+    ) { 
+        this.loadLocalStorage();
+    }
     get tagsHistory(){
         return [...this._tagHistory];
     }
@@ -30,8 +32,21 @@ export class GifsService {
         }
         this._tagHistory.unshift(tag);
         this._tagHistory = this._tagHistory.splice(0, 10)
+        this.saveLocalStorage();
+    }
+
+    private saveLocalStorage():void {
+        localStorage.setItem('history', JSON.stringify(this._tagHistory));
     }
     
+    private loadLocalStorage(): void {
+        if(!localStorage.getItem('history')) return;
+
+        this._tagHistory = JSON.parse(localStorage.getItem('history')! );
+
+        if(this._tagHistory.length === 0) return;
+        this.searchTag(this._tagHistory[0])
+    }
     //! CON USO DE FETCH
     // async searchTag(tag: string): Promise<void>{
     //     if(tag.length === 0 || tag === ' ') return;
